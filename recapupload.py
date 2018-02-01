@@ -85,8 +85,9 @@ class RecapUpload(object):
         4. If necessary, we fake the docket entry and case title.
         5. We upload the PDF.
         """
+        recap_token = settings.recap_token
 
-        if not len(settings.recap_token) >= 40:
+        if not len(recap_token) >= 40:
             # Not a valid token
             if VERBOSE > 0:
                 print "Not a valid authentication token."
@@ -147,7 +148,7 @@ class RecapUpload(object):
         # /dockets/?pacer_case_id=189311&court=mad
         r = requests.get(
             url=API_BASE+'dockets/',
-            headers={'Authorization': 'Token %s' % settings.recap_token},
+            headers={'Authorization': 'Token %s' % recap_token},
             params={'court': court,
                     'pacer_case_id': pacer_case_id},
             timeout=TIMEOUTS,
@@ -182,7 +183,7 @@ class RecapUpload(object):
             # object without a RECAP docket (...)
             r = requests.get(
                 url=API_BASE+'docket-entries/',
-                headers={'Authorization': 'Token %s' % settings.recap_token},
+                headers={'Authorization': 'Token %s' % recap_token},
                 params={
                     'docket': cl_docket_id,
                     'entry_number': entry_number,
@@ -241,7 +242,7 @@ class RecapUpload(object):
             files = {'filepath_local': ('filepath_local', html, 'text/html')}
             r = requests.post(
                 url=API_BASE+'recap/',
-                headers={'Authorization': 'Token %s' % settings.recap_token},
+                headers={'Authorization': 'Token %s' % recap_token},
                 data={
                     'upload_type': _UploadType.DOCKET,
                     'court': court,
@@ -262,7 +263,7 @@ class RecapUpload(object):
         files = {'filepath_local': open(filename, 'rb')}
         r = requests.post(
             url=API_BASE+'recap/',
-            headers={'Authorization': 'Token %s' % settings.recap_token},
+            headers={'Authorization': 'Token %s' % recap_token},
             data={
                 'upload_type': _UploadType.PDF,
                 'court': court,
