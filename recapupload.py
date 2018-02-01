@@ -123,16 +123,16 @@ class RecapUpload(object):
         url = match.group('url')
         entry_number = match.group('anchor')
 
-        match = re.search(r'http.*/docs?1/(?P<dls>\d+)\?', url)
-        pacer_doc_id = match.group('dls')
-        if pacer_doc_id[3:4] == '1':
+        parsed_url = urlparse.urlparse(url)
+
+        pacer_doc_id = parsed_url.path.split('/')[-1]
+        if pacer_doc_id[3] == '1':
             # PACER sites use the fourth digit of the pacer_doc_id to
             # flag whether the user has been shown a receipt page.  We
             # don't care about that, so we always set the fourth digit
             # to 0 when getting a doc ID.
-            pacer_doc_id = pacer_doc_id[0:3] + '0' + pacer_doc_id[4:]
+            pacer_doc_id = pacer_doc_id[:3] + '0' + pacer_doc_id[4:]
 
-        parsed_url = urlparse.urlparse(url)
         court = self.PACER_Court_to_CL(parsed_url.hostname.split('.')[1])
         qparams = urlparse.parse_qs(parsed_url.query)
 
@@ -161,11 +161,7 @@ class RecapUpload(object):
                 print "RECAP docket doesn't exist. We need to fake one up."
             need_fake_case = True
         else:
-            # The CL docket ID, needed for the next query, is here:
-            # "resource_uri":
-            # "https://www.courtlistener.com/api/rest/v3/dockets/6125037/",
-            cl_docket_id = re.search(r'/dockets/(\d+)/',
-                                     rj['results'][0]['resource_uri']).group(1)
+            cl_docket_id = rj['results'][0]['id']
 
         # #3. We lookup the docket entry, or determine we need to fake it.
         if not need_fake_case:
